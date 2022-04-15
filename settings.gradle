@@ -1,0 +1,4 @@
+rootProject.name = "bl53"
+include ':app'
+include ':ble'
+include ':app-context-holder'

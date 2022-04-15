@@ -1,0 +1,48 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+
+    ext.kotlin_version = "1.6.20"
+    ext.lib_versions = [
+            'minSdkVersion'    : 21,
+            'compileSdkVersion': 31,
+            'targetSdkVersion' : 31,
+            'versionCode'      : 1,
+            'versionName'      : '1.0',
+            'appcompat'        : "1.4.1",
+            'core_ktx'         : "1.7.0",
+            'constraintlayout' : "2.1.1",
+            'material'         : "1.5.0",
+            'navigation'       : "2.3.5",
+            'startup'          : "1.1.1",
+            'retrofit'         : "2.9.0",
+            'rxjava3'          : "3.0.0",
+            'logging'          : "4.9.2"
+    ]
+
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://jitpack.io" }
+        maven {url 'https://developer.huawei.com/repo/'}
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'com.huawei.agconnect:agcp:1.2.0.300'
+    }
+}
+
+allprojects {
+
+    repositories {
+        google()
+        jcenter()
+        maven { url "https://jitpack.io" }
+        maven {url 'https://developer.huawei.com/repo/'}
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

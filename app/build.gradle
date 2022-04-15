@@ -1,0 +1,66 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+//apply plugin: 'kotlin-parcelize'
+apply plugin: 'com.huawei.agconnect'
+android {
+    compileSdkVersion lib_versions.compileSdkVersion
+
+    defaultConfig {
+        applicationId "com.tool.bl53"
+        minSdkVersion lib_versions.minSdkVersion
+        targetSdkVersion lib_versions.targetSdkVersion
+        versionCode lib_versions.versionCode
+        versionName lib_versions.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+
+    implementation "androidx.appcompat:appcompat:$lib_versions.appcompat"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "androidx.core:core-ktx:$lib_versions.core_ktx"
+    implementation "androidx.constraintlayout:constraintlayout:$lib_versions.constraintlayout"
+    implementation "com.google.android.material:material:$lib_versions.material"
+    implementation "androidx.navigation:navigation-fragment-ktx:$lib_versions.navigation"
+    implementation "androidx.navigation:navigation-ui-ktx:$lib_versions.navigation"
+
+//    implementation 'com.google.code.gson:gson:2.8.5'
+
+    implementation project(path: ':ble')
+    implementation project(path: ':app-context-holder')
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    implementation 'com.huawei.hms:scan:2.2.0.300'
+
+    implementation "com.squareup.retrofit2:retrofit:$lib_versions.retrofit"
+    implementation "com.squareup.retrofit2:converter-gson:$lib_versions.retrofit"
+    implementation "com.squareup.retrofit2:converter-scalars:$lib_versions.retrofit"
+    implementation "com.squareup.retrofit2:adapter-rxjava3:$lib_versions.retrofit"
+//    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
+    implementation "io.reactivex.rxjava3:rxandroid:$lib_versions.rxjava3"
+//    okhttp 日志拦截器
+    implementation "com.squareup.okhttp3:logging-interceptor:$lib_versions.logging"
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}

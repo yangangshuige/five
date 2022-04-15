@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@+id/deviceListFragment">
+    <fragment
+        android:id="@+id/fragmentMain"
+        android:name="com.tool.bl53.biz.pages.main.MainFragment"
+        android:label="MainFragment"
+        tools:layout="@layout/fragment_main" />
+    <fragment
+        android:id="@+id/deviceFragment"
+        android:name="com.tool.bl53.biz.pages.device.DeviceFragment"
+        android:label="FragmentA"
+        tools:layout="@layout/fragment_device" />
+    <fragment
+        android:id="@+id/deviceListFragment"
+        android:name="com.tool.bl53.biz.pages.device.DeviceListFragment"
+        android:label="FragmentA"
+        tools:layout="@layout/fragment_device_list" />
+
+
+    <fragment
+        android:id="@+id/fragmentC"
+        android:name="com.tool.bl53.FragmentC"
+        android:label="FragmentC"
+        tools:layout="@layout/fragment_c" />
+    <activity
+        android:id="@+id/scanActivity"
+        android:name="com.tool.bl53.biz.pages.device.ScanActivity"
+        android:label="scanActivity"
+        tools:layout="@layout/activity_scan" />
+
+</navigation>
