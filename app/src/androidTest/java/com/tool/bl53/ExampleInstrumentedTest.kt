@@ -24,9 +24,4 @@ class ExampleInstrumentedTest {
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals("com.example.test", appContext.packageName)
     }
-    @Test
-    fun myTest4() {
-        val viewModel  = DeviceViewModel()
-        viewModel.queryDeviceInfo("","","")
-    }
 }
