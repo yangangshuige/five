@@ -1,5 +1,7 @@
 package com.tool.bl53.network
 
+import com.tool.bl53.biz.bean.DeviceResponse
+import com.tool.bl53.biz.bean.SecurityInfoVO
 import com.tool.bl53.utils.LogUtils
 import com.tool.bl53.utils.NetUtil
 import okio.IOException
@@ -56,12 +58,12 @@ object NetworkUtils {
             BaseResult.failure(Exception("Failed to ${recordMethodName[4].className}${response.message}"))
         }
     }
-    suspend fun <T : Any> handlerResponse(
-        response: JhResponse<T>,
+    suspend fun handlerResponse(
+        response: DeviceResponse,
         successBlock: (suspend () -> Unit)? = null,
         errorBlock: (suspend () -> Unit)? = null
-    ): BaseResult<T> {
-        return if (response.error_code == 0) {
+    ): BaseResult<SecurityInfoVO> {
+        return if (response.state) {
             val recordMethodName = Thread.currentThread().stackTrace
             LogUtils.d(
                 TAG,
@@ -69,7 +71,7 @@ object NetworkUtils {
             )
             // 成功之后处理
             successBlock?.let { it() }
-            BaseResult.success(response.result)
+            BaseResult.success(response.securityInfoVO)
         } else {
             val recordMethodName = Thread.currentThread().stackTrace
             LogUtils.d(
@@ -78,7 +80,7 @@ object NetworkUtils {
             )
             // 失败之后处理
             errorBlock?.let { it() }
-            BaseResult.failure(Exception("Failed to ${recordMethodName[4].className}${response.reason}"))
+            BaseResult.failure(Exception("Failed to ${recordMethodName[4].className}${response.errMsg}"))
         }
     }
 //    suspend fun <T> callRequest(

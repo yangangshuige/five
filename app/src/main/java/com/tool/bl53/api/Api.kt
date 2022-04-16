@@ -1,6 +1,7 @@
 package com.tool.bl53.api
 
 import com.tool.bl53.biz.bean.BL53LockInfo
+import com.tool.bl53.biz.bean.DeviceResponse
 import com.tool.bl53.network.BaseResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -8,6 +9,12 @@ import retrofit2.http.Query
 interface Api {
     @GET(ApiConstants.QUERY_LOCK_INFO)
     suspend fun getBL53LockInfo(@Query("lockNo") lockNo: String): BaseResponse<BL53LockInfo>
+
+    @GET(ApiConstants.QUERY_LOCK_INFO)
+    suspend fun queryDeviceInfoByMac(@Query("mac") mac: String?): DeviceResponse
+
+    @GET(ApiConstants.QUERY_LOCK_INFO)
+    suspend fun queryDeviceInfoByCode(@Query("lockCode") lockCode: String?): DeviceResponse
 //    @FormUrlEncoded
 //    @POST(HttpsApi.login)
 //    suspend fun login(

@@ -1,7 +1,9 @@
 package com.tool.bl53.biz.pages.launch
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.preference.PreferenceManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -9,6 +11,8 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.tool.bl53.R
+import com.tool.bl53.api.ApiConstants
+import com.tool.bl53.utils.LogUtils
 
 class LaunchActivity : AppCompatActivity() {
     private var navController: NavController? = null
@@ -42,6 +46,8 @@ class LaunchActivity : AppCompatActivity() {
     }
 
     private fun isLogin(): Boolean {
-        return true
+        val sharedPreferences = getSharedPreferences(ApiConstants.PREFERENCES_NAME, 0)
+        val time = sharedPreferences.getLong(ApiConstants.EXPORT_TIME, 0)
+        return System.currentTimeMillis() < time
     }
 }

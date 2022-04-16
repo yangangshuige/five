@@ -7,25 +7,7 @@ import javax.crypto.spec.SecretKeySpec
 
 object DataUtil {
     private val TAG = DataUtil::class.java.simpleName
-    private val DEFAULT_KEY_2 = byteArrayOf(
-        0xF9.toByte(),
-        0xB6.toByte(),
-        0xE1.toByte(),
-        0x43,
-        0x30,
-        0x13,
-        0xBD.toByte(),
-        0x5F,
-        0xBB.toByte(),
-        0xD2.toByte(),
-        0x56,
-        0x3B,
-        0xAA.toByte(),
-        0x43,
-        0xF5.toByte(),
-        0x40
-    )
-    private val DEFAULT_KEY_1 = byteArrayOf(
+    var defaultAesKey = byteArrayOf(
         0x20,
         0x57,
         0x2F,
@@ -43,7 +25,7 @@ object DataUtil {
         0x2D,
         0x2B
     )
-
+    var defaultPassword = "D56E44"
     fun byteToString(data: ByteArray): String {
         val ret = StringBuilder()
         for (datum in data) {
@@ -52,9 +34,9 @@ object DataUtil {
         return ret.toString()
     }
 
-    fun getPassword(password: String): ByteArray {
+    fun getPassword(): ByteArray {
         val data = Base64.encodeToString(
-            password.toByteArray(),
+            defaultPassword.toByteArray(),
             Base64.NO_WRAP
         )
         return Base64.decode(data, Base64.DEFAULT)
@@ -73,11 +55,38 @@ object DataUtil {
     fun byteArrayToInt(byteArray: ByteArray): Int {
         var value = 0
         for (index in byteArray.indices) {
-            val shl = (byteArray.size - index-1).times(8)
+            val shl = (byteArray.size - index - 1).times(8)
             val or = byteArray[index].toInt() and (0xff)
             value = value or (or shl shl)
         }
         return value
+    }
+
+    fun toMac(str: String): String {
+        val sb = StringBuilder()
+        for (i in 0..5) {
+            sb.append(str.substring(i * 2, i * 2 + 2))
+            if (i < 5) {
+                sb.append(":")
+            }
+        }
+        return sb.toString()
+    }
+
+    /**
+     * 16进制字符串转换成byte数组
+     */
+    fun hexToBytes(hexString: String): ByteArray {
+        val byteArray = hexString.toByteArray()
+        val byteArraySize = byteArray.size
+        val hexByteArray = ByteArray(byteArraySize / 2)
+        var i = 0
+        while (i < byteArraySize) {
+            val strTmp = String(byteArray, i, 2)
+            hexByteArray[i / 2] = strTmp.toInt(16).toByte()
+            i += 2
+        }
+        return hexByteArray
     }
 
     /**
@@ -85,7 +94,7 @@ object DataUtil {
      */
     fun encryptAes128(sSrc: ByteArray): ByteArray? {
         return try {
-            val sks = SecretKeySpec(DEFAULT_KEY_2, "AES")
+            val sks = SecretKeySpec(defaultAesKey, "AES")
             val cipher = Cipher.getInstance("AES/ECB/NoPadding")
             cipher.init(Cipher.ENCRYPT_MODE, sks)
             cipher.doFinal(sSrc)
@@ -100,7 +109,7 @@ object DataUtil {
      */
     fun decryptAes128(sSrc: ByteArray): ByteArray? {
         return try {
-            val sks = SecretKeySpec(DEFAULT_KEY_2, "AES")
+            val sks = SecretKeySpec(defaultAesKey, "AES")
             val cipher = Cipher.getInstance("AES/ECB/NoPadding")
             cipher.init(Cipher.DECRYPT_MODE, sks)
             cipher.doFinal(sSrc)

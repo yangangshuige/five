@@ -1,6 +1,7 @@
 package com.tool.bl53
 
 import android.util.Base64
+import com.tool.bl53.utils.DataUtil
 import com.tool.bl53.utils.Utils
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -112,11 +113,8 @@ class ExampleUnitTest {
 
     @Test
     fun myTest6() {
-        val command = byteArrayOf(
-            0x90.toByte(), 0x01,
-        )
-        println("command================${byteArrayToInt(command)}")
-        println("Utils================${Utils.byteArray2int(command)}")
+        val command: String? = null
+        println("item==========${command?.isNotEmpty()}")
     }
 
     @Test

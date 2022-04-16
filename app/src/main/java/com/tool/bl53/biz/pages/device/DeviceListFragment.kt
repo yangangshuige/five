@@ -18,9 +18,12 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.showToast
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.huawei.hms.ml.scan.HmsScan
 import com.tool.bl53.R
+import com.tool.bl53.biz.bean.ResourceState
 import com.tool.bl53.biz.bean.ScanState
 import com.tool.bl53.biz.viewmodel.DeviceViewModel
 import com.tool.bl53.biz.viewmodel.ScanViewModel
@@ -32,7 +35,7 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
     private lateinit var bleResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var locationResultLauncher: ActivityResultLauncher<String>
     private lateinit var viewBinding: FragmentDeviceListBinding
-    private val connectViewModel: ScanViewModel by viewModels()
+    private val scanViewModel: ScanViewModel by viewModels()
     private val deviceViewModel: DeviceViewModel by viewModels()
     private val mDeviceAdapter = DeviceAdapter()
     private val hasLocationPermission: Boolean
@@ -55,7 +58,11 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
         viewBinding = FragmentDeviceListBinding.bind(view)
         viewBinding.recyclerviewDeviceList.addItemDecoration(lineSeparatorDecoration)
         viewBinding.recyclerviewDeviceList.adapter = mDeviceAdapter
-        deviceViewModel.queryBL53LockInfo("")
+        mDeviceAdapter.onItemClick = { position ->
+            scanViewModel.stopScan()
+            val bleDevice = mDeviceAdapter.getItemData(position)
+            deviceViewModel.queryDeviceInfo(bleDevice.mac, "", bleDevice.name, true)
+        }
         viewBinding.toolbar.setOnMenuItemClickListener { item ->
             when (item?.itemId) {
                 R.id.navigation_scan -> {
@@ -72,7 +79,7 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
             )
         )
         viewBinding.swipeRefresh.setOnRefreshListener {
-            val scanDeviceLiveData = connectViewModel.scanDeviceLiveData.value
+            val scanDeviceLiveData = scanViewModel.scanDeviceLiveData.value
             if (scanDeviceLiveData is ScanState.ScanFinish) {
                 checkPermissions()
             } else {
@@ -98,12 +105,12 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
 
                 override fun parseResult(resultCode: Int, intent: Intent?): Boolean {
                     Log.d(TAG, "resultCode=====$resultCode" + "intent========$intent")
-                    return connectViewModel.isBlueEnable()
+                    return scanViewModel.isBlueEnable()
                 }
 
             }) { resultCallback ->
                 if (resultCallback) {
-                    connectViewModel.startScan()
+                    scanViewModel.startScan()
                 }
                 Log.d(TAG, "ActivityResultCallback=====$resultCallback")
             }
@@ -112,12 +119,12 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
                 if (Activity.RESULT_OK == activityResult.resultCode) {
                     val hmsScan: HmsScan? =
                         activityResult.data?.getParcelableExtra(ScanActivity.SCAN_RESULT)
-                    val code = hmsScan?.originalValue
-                    Log.d(TAG, "code=====$code")
+                    val code = hmsScan?.originalValue ?: ""
+                    deviceViewModel.queryDeviceInfo("", code, "BL53", false)
                 }
             }
-        connectViewModel.registerCallBack()
-        connectViewModel.scanDeviceLiveData.observeUnSticky(viewLifecycleOwner) { scanDeviceState ->
+        scanViewModel.registerCallBack()
+        scanViewModel.scanDeviceLiveData.observeUnSticky(viewLifecycleOwner) { scanDeviceState ->
             run {
                 when (scanDeviceState) {
                     is ScanState.ScanStart -> {
@@ -133,6 +140,20 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
                 }
             }
         }
+        deviceViewModel.lockInfoLiveData.observeUnSticky(viewLifecycleOwner) { state ->
+            when (state) {
+                is ResourceState.Success -> {
+                    findNavController().navigate(
+                        R.id.deviceFragment,
+                        DeviceFragment.buildArguments(state.data!!)
+                    )
+
+                }
+                else -> {
+                    showToast("获取设备信息失败")
+                }
+            }
+        }
         checkPermissions()
     }
 
@@ -145,8 +166,8 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
     }
 
     private fun checkBluetooth() {
-        if (connectViewModel.isBlueEnable()) {
-            connectViewModel.startScan()
+        if (scanViewModel.isBlueEnable()) {
+            scanViewModel.startScan()
         } else {
             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             bleResultLauncher.launch(intent)

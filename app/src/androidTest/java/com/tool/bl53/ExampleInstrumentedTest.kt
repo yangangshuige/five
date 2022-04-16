@@ -1,8 +1,10 @@
 package com.tool.bl53
 
 import android.util.Base64
+import androidx.lifecycle.ViewModelProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.tool.bl53.biz.viewmodel.DeviceViewModel
 
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -24,11 +26,7 @@ class ExampleInstrumentedTest {
     }
     @Test
     fun myTest4() {
-        val password ="D56E44"
-        val data = Base64.encodeToString(password.toByteArray(),
-            Base64.NO_WRAP)
-        val byte =Base64.decode(data,Base64.DEFAULT)
-        println("data================$data")
-        println("byte================${byte.size}")
+        val viewModel  = DeviceViewModel()
+        viewModel.queryDeviceInfo("","","")
     }
 }

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.showToast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.tool.bl53.R
@@ -35,9 +36,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         })
         viewBinding.login.setOnClickListener {
-            findNavController().navigate(R.id.main_activity)
-            requireActivity().finishAfterTransition()
+            showToast("账号或密码错误！")
         }
+        showToast("登录已过期，请等重新登录")
     }
 
 }

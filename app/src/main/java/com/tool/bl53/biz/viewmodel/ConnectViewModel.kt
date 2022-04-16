@@ -40,8 +40,9 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
     val connectLiveData: PolLiveData<ConnectState<BleDevice>> = connectState
     private val notifyState = PolLiveData<Boolean>()
     val notifyLiveData: PolLiveData<Boolean> = notifyState
-    private val defaultPassword = "D56E44"
     private var mConnectDevice: BleDevice? = null
+    var mLockModel = -1
+
     private val bleGattCallback = object : BleGattCallback() {
         override fun onStartConnect() {
             connectState.postValue(ConnectState.connectStart())
@@ -60,16 +61,8 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
             connectState.postValue(ConnectState.connectSuccess(bleDevice))
 
             mConnectDevice = bleDevice
-            //取消重连
-            AppExecutors.instance.getMainHandler().removeCallbacks(reConnectRunnable)
             //  延迟2秒开启通知
             AppExecutors.instance.executeDelayedOnMainExecutor(notifyRunnable, 2000)
-            //  延迟6秒同步车辆时间
-//            AppExecutors.instance.executeDelayedOnMainExecutor(deviceRTCRunnable, 6 * 1000)
-            //  延迟8秒获取车辆信息
-//            AppExecutors.instance.executeDelayedOnMainExecutor(deviceRunnable, 8 * 1000)
-            //  延迟秒10秒开启心跳
-//            AppExecutors.instance.executeDelayedOnMainExecutor(heartRunnable, 10 * 1000)
         }
 
         override fun onDisConnected(
@@ -86,6 +79,8 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
     fun connectDevice(mac: String) {
         BleManager.instance.connect(mac, bleGattCallback)
     }
+
+    fun isConnected(): Boolean = connectState.value is ConnectState.ConnectSuccess
 
     private fun getToken() {
         val data = byteArrayOf(0x00, 0x00, 0x01, 0xff.toByte())
@@ -111,7 +106,7 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
         executeCommand(CmdParams(CmdParams.CMD_SYNC_TIME, command))
     }
 
-    private fun getMv() {
+    fun getMv() {
         val data = byteArrayOf(
             0x02,
             0x00,
@@ -137,6 +132,7 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
         Log.d(TAG, "openLock初始数据：========${DataUtil.byteToString(command)}")
         executeCommand(CmdParams(CmdParams.CMD_OPEN_LOCK, command))
     }
+
     fun closeLock() {
         val head = byteArrayOf(
             0x04,
@@ -151,8 +147,33 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
         executeCommand(CmdParams(CmdParams.CMD_CLOSE_LOCK, command))
     }
 
+    fun getLockModel() {
+        val data = byteArrayOf(
+            0x08,
+            0x10,
+            0x01,
+            0x01
+        )
+        val command = fillToken(data)
+        Log.d(TAG, "getLockModel初始数据：========${DataUtil.byteToString(command)}")
+        executeCommand(CmdParams(CmdParams.CMD_GET_MODEL, command))
+    }
+
+    fun setLockModel(model: Int) {
+        mLockModel = model
+        val data = byteArrayOf(
+            0x08,
+            0x00,
+            0x01,
+            model.toByte()
+        )
+        val command = fillToken(data)
+        Log.d(TAG, "setLockModel初始数据：========${DataUtil.byteToString(command)}")
+        executeCommand(CmdParams(CmdParams.CMD_SET_MODEL, command))
+    }
+
     private fun fillPassword(byteArray: ByteArray): ByteArray {
-        val password = DataUtil.getPassword(defaultPassword)
+        val password = DataUtil.getPassword()
         val data = ByteArray(byteArray.size + password.size)
         System.arraycopy(byteArray, 0, data, 0, byteArray.size)
         System.arraycopy(password, 0, data, byteArray.size, password.size)
@@ -206,7 +227,6 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
                 )
                 commandState(CmdParams.CMD_GET_TOKEN).set(false)
                 syncTime()
-                getMv()
             }
             0x0180 -> {
                 AppExecutors.instance.getMainHandler()
@@ -219,7 +239,10 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
             0x0280 -> {
                 Log.d(TAG, "获取电压成功[3]：========${realData[3].toInt()}")
                 Log.d(TAG, "获取电压成功[4]：========${realData[4].toInt()}")
-                val mv = "${realData[3].toInt()}.${realData[4].toInt()}v"
+//                val mv = "${realData[3].toInt()}.${realData[4].toInt()}v"
+                val hb: Int = if (realData[3] < 0) realData[3] + 256 else realData[3].toInt()
+                val lb: Int = if (realData[4] < 0) realData[4] + 256 else realData[4].toInt()
+                val mv = "v" + ((hb * 256 + lb) * 1.0f / 100)
                 AppExecutors.instance.getMainHandler()
                     .removeCallbacks(cmdTimeOutRunnable(CmdParams.CMD_GET_MV))
                 commandExecuteStateLiveData(CmdParams.CMD_GET_MV).postValue(
@@ -244,6 +267,25 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
                     ResourceState.success(true)
                 )
                 commandState(CmdParams.CMD_CLOSE_LOCK).set(false)
+            }
+            0x0880 -> {
+                Log.d(TAG, "设置工作模式成功：========${realData[3].toInt() == 0}")
+                AppExecutors.instance.getMainHandler()
+                    .removeCallbacks(cmdTimeOutRunnable(CmdParams.CMD_SET_MODEL))
+                commandExecuteStateLiveData(CmdParams.CMD_SET_MODEL).postValue(
+                    ResourceState.success(0 == realData[3].toInt())
+                )
+                commandState(CmdParams.CMD_SET_MODEL).set(false)
+            }
+            0x0890 -> {
+                Log.d(TAG, "查询工作模式成功：========${realData[3].toInt()}")
+                mLockModel = realData[3].toInt()
+                AppExecutors.instance.getMainHandler()
+                    .removeCallbacks(cmdTimeOutRunnable(CmdParams.CMD_GET_MODEL))
+                commandExecuteStateLiveData(CmdParams.CMD_GET_MODEL).postValue(
+                    ResourceState.success(true)
+                )
+                commandState(CmdParams.CMD_GET_MODEL).set(false)
             }
         }
     }
@@ -370,6 +412,11 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
             AppExecutors.instance.getMainHandler().removeCallbacks(this)
         }
 
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        BleManager.instance.destroy()
     }
 
     companion object {

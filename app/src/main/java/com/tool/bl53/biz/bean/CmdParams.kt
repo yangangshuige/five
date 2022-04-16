@@ -11,6 +11,8 @@ data class CmdParams(
         const val CMD_GET_MV = "获取电压"
         const val CMD_OPEN_LOCK = "开锁"
         const val CMD_CLOSE_LOCK = "关锁"
+        const val CMD_GET_MODEL = "获取工作模式"
+        const val CMD_SET_MODEL = "设置工作模式"
     }
 
     override fun equals(other: Any?): Boolean {

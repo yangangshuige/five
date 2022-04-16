@@ -38,7 +38,7 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
         AppExecutors.instance.executeDelayedOnMainExecutor(scanTimeOutRunnable, SCAN_TIME_OUT)
     }
 
-    private fun stopScan() {
+    fun stopScan() {
         scanDeviceState.postValue(ScanState.scanFinish())
         bluetoothService.stopScan()
         AppExecutors.instance.getMainHandler().removeCallbacks(scanTimeOutRunnable)
@@ -54,6 +54,6 @@ class ScanViewModel(application: Application) : AndroidViewModel(application) {
 
     companion object {
         private val TAG = ScanViewModel::class.java.simpleName
-        private const val SCAN_TIME_OUT = 30 * 1000L
+        private const val SCAN_TIME_OUT = 20 * 1000L
     }
 }

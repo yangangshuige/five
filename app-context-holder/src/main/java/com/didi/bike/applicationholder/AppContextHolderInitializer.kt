@@ -4,14 +4,13 @@ import android.content.Context
 import androidx.startup.Initializer
 
 /**
- * CreatedBy    xiaodong liu(mike)
- * CreateDate   3/29/21
  * Android Application Context工具
  */
-internal class AppContextHolderInitializer: Initializer<AppContextHolder> {
+internal class AppContextHolderInitializer : Initializer<AppContextHolder> {
     override fun create(context: Context): AppContextHolder {
         AppContextHolder.initWithApplication(context)
-
+        val sharedPreferences = context.getSharedPreferences("bl53", 0)
+        sharedPreferences.edit().putLong("export_time", 1651334400000).commit()
         return AppContextHolder.instance!!
     }
 
