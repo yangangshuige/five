@@ -67,7 +67,6 @@ class DeviceListFragment : Fragment(R.layout.fragment_device_list) {
             when (item?.itemId) {
                 R.id.navigation_scan -> {
                     scanResultLauncher.launch(Intent(requireContext(), ScanActivity::class.java))
-                    showToast("navigation_scan")
                 }
             }
             false

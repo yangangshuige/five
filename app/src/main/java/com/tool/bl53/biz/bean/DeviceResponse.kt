@@ -18,4 +18,9 @@ data class SecurityInfoVO(
     fun available(): Boolean {
         return key?.isNotEmpty() == true && passwd?.isNotEmpty() == true && mac?.isNotEmpty() == true
     }
+
+    override fun toString(): String {
+        return "SecurityInfoVO(deviceId=$deviceId, key=$key, mac=$mac, passwd=$passwd, secret=$secret)"
+    }
+
 }
